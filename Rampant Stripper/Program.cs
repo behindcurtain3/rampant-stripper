@@ -28,17 +28,26 @@ namespace Rampant_Stripper
                 }
 
                 ProcessFolder(path);
-                
+
+                String destRoot = "";
+
                 // TV Show
                 if(VideoCount > 3)
                 {
-                    Directory.Move(path, Path.Combine("E:\\TV\\", Path.GetDirectoryName(path)));
+                    destRoot = "E:\\TV\\";
                 }
                 // Movie
                 else
                 {
-                    Directory.Move(path, Path.Combine("E:\\Movies\\", Path.GetDirectoryName(path)));
+                    destRoot = "E:\\Movies\\";
                 }
+
+                String destination = Path.Combine(destRoot, new DirectoryInfo(path).Name);
+                Console.WriteLine("Source: " + path);
+                Console.WriteLine("Destination: " + destination);
+
+                // Do the move
+                Directory.Move(path, destination);
             }            
         }
 
