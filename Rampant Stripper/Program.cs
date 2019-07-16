@@ -1,9 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Rampant_Stripper
 {
@@ -13,13 +10,19 @@ namespace Rampant_Stripper
 
         static void Main(string[] args)
         {
-            if(args.Length <= 0)
+            // Setup logging
+            System.IO.StreamWriter sw = new System.IO.StreamWriter(@"log.txt", true);
+            sw.AutoFlush = true;
+            Console.SetOut(sw);
+
+            if (args.Length <= 0)
             {
                 Console.WriteLine("No path specified.");
             }
             else
             {
-                String path = args[0];
+                String destinationRoot = args[0];
+                String path = args[1];
 
                 if (!Directory.Exists(path))
                 {
@@ -27,17 +30,38 @@ namespace Rampant_Stripper
                     return;
                 }
 
-                ProcessFolder(path);
-                
-                // TV Show
-                if(VideoCount > 3)
+                // Wait a few seconds for the files to be "released"
+                Thread.Sleep(5000);
+                                
+                try
                 {
-                    Directory.Move(path, Path.Combine("E:\\TV\\", Path.GetDirectoryName(path)));
+                    // Start log
+                    Console.WriteLine("------------------------------------------------------------------------------------------");
+                    Console.WriteLine("Processing: " + path);
+                    Console.WriteLine("------------------------------------------------------------------------------------------");
+
+
+                    // Process the folder
+                    ProcessFolder(path);
+
+                    String destination = "";
+                    String directoryName = new DirectoryInfo(path).Name;
+                    Console.WriteLine("Directory Name: " + directoryName);
+
+                    destination = Path.Combine(destinationRoot, directoryName);
+
+                    Console.WriteLine("Moving from: " + path);
+                    Console.WriteLine("Moving to: " + destination);
+
+                    Directory.Move(path, destination);
+
+                    Console.WriteLine("Finished processing");
+                    Console.WriteLine("");
                 }
-                // Movie
-                else
+                catch(Exception ex)
                 {
-                    Directory.Move(path, Path.Combine("E:\\Movies\\", Path.GetDirectoryName(path)));
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);                    
                 }
             }            
         }
@@ -58,10 +82,11 @@ namespace Rampant_Stripper
                     Path.GetExtension(fileName).Equals(".png") ||
                     Path.GetExtension(fileName).Equals(".jpg") ||
                     Path.GetExtension(fileName).Equals(".jpeg") ||
-                    Path.GetExtension(fileName).Equals(".nfo"))
+                    Path.GetExtension(fileName).Equals(".nfo") ||
+                    Path.GetExtension(fileName).Equals(".exe"))
                 {
                     File.Delete(fileName);
-                    Console.WriteLine("Removed" + fileName);
+                    Console.WriteLine("Removed: " + fileName);
                     continue;
                 }
                 else if(Path.GetExtension(fileName).Equals(".mkv"))
