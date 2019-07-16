@@ -1,6 +1,9 @@
 ﻿using System;
 using System.IO;
-using System.Threading;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Rampant_Stripper
 {
@@ -10,19 +13,13 @@ namespace Rampant_Stripper
 
         static void Main(string[] args)
         {
-            // Setup logging
-            System.IO.StreamWriter sw = new System.IO.StreamWriter(@"log.txt", true);
-            sw.AutoFlush = true;
-            Console.SetOut(sw);
-
             if (args.Length <= 0)
             {
                 Console.WriteLine("No path specified.");
             }
             else
             {
-                String destinationRoot = args[0];
-                String path = args[1];
+                String path = args[0];
 
                 if (!Directory.Exists(path))
                 {
@@ -30,73 +27,60 @@ namespace Rampant_Stripper
                     return;
                 }
 
-                // Wait a few seconds for the files to be "released"
-                Thread.Sleep(5000);
-                                
-                try
+                ProcessFolder(path);
+
+                String destRoot = "";
+
+                // TV Show
+                if (VideoCount > 3)
                 {
-                    // Start log
-                    Console.WriteLine("------------------------------------------------------------------------------------------");
-                    Console.WriteLine("Processing: " + path);
-                    Console.WriteLine("------------------------------------------------------------------------------------------");
-
-
-                    // Process the folder
-                    ProcessFolder(path);
-
-                    String destination = "";
-                    String directoryName = new DirectoryInfo(path).Name;
-                    Console.WriteLine("Directory Name: " + directoryName);
-
-                    destination = Path.Combine(destinationRoot, directoryName);
-
-                    Console.WriteLine("Moving from: " + path);
-                    Console.WriteLine("Moving to: " + destination);
-
-                    Directory.Move(path, destination);
-
-                    Console.WriteLine("Finished processing");
-                    Console.WriteLine("");
+                    destRoot = "E:\\TV\\";
                 }
-                catch(Exception ex)
+                // Movie
+                else
                 {
-                    Console.WriteLine(ex.Message);
-                    Console.WriteLine(ex.StackTrace);                    
+                    destRoot = "E:\\Movies\\";
                 }
-            }            
+
+                String destination = Path.Combine(destRoot, new DirectoryInfo(path).Name);
+                Console.WriteLine("Source: " + path);
+                Console.WriteLine("Destination: " + destination);
+
+                // Do the move
+                Directory.Move(path, destination);
+            }
         }
 
         private static void ProcessFolder(String path)
-        {            
+        {
 
             // Recursively process subfolders first
             foreach (String directory in Directory.GetDirectories(path))
                 ProcessFolder(directory);
 
             // Process the files in the folder    
-            foreach(String fileName in Directory.GetFiles(path))
+            foreach (String fileName in Directory.GetFiles(path))
             {
                 Console.WriteLine("Processing file: " + fileName);
 
-                if(Path.GetExtension(fileName).Equals(".txt") ||
+                if (Path.GetExtension(fileName).Equals(".txt") ||
                     Path.GetExtension(fileName).Equals(".png") ||
                     Path.GetExtension(fileName).Equals(".jpg") ||
                     Path.GetExtension(fileName).Equals(".jpeg") ||
-                    Path.GetExtension(fileName).Equals(".nfo") ||
-                    Path.GetExtension(fileName).Equals(".exe"))
+                    Path.GetExtension(fileName).Equals(".nfo"))
                 {
                     File.Delete(fileName);
-                    Console.WriteLine("Removed: " + fileName);
+                    Console.WriteLine("Removed" + fileName);
                     continue;
                 }
-                else if(Path.GetExtension(fileName).Equals(".mkv"))
+                else if (Path.GetExtension(fileName).Equals(".mkv"))
                 {
                     ProcessMkv(fileName);
                 }
-                else if(Path.GetExtension(fileName).Equals(".mp4"))
+                else if (Path.GetExtension(fileName).Equals(".mp4"))
                 {
                     ProcessMp4(fileName);
-                }               
+                }
 
                 Console.WriteLine("Finished Processing");
             }
@@ -108,14 +92,14 @@ namespace Rampant_Stripper
                 {
                     Directory.Delete(directory);
                     Console.WriteLine("Removed empty directory: " + directory);
-                }                    
+                }
             }
         }
 
         private static void ProcessMkv(String fileName)
         {
             var file = TagLib.Matroska.File.Create(fileName);
-            
+
             PrintTagType(file.TagTypes);
 
             // strip the title & comments
