@@ -1,9 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 
 namespace Rampant_Stripper
 {
@@ -19,7 +16,8 @@ namespace Rampant_Stripper
             }
             else
             {
-                String path = args[0];
+                String destinationRoot = args[0];
+                String path = args[1];
 
                 if (!Directory.Exists(path))
                 {
@@ -27,27 +25,39 @@ namespace Rampant_Stripper
                     return;
                 }
 
-                ProcessFolder(path);
+                // Wait a few seconds for the files to be "released"
+                Thread.Sleep(5000);
 
-                String destRoot = "";
-
-                // TV Show
-                if (VideoCount > 3)
+                try
                 {
-                    destRoot = "E:\\TV\\";
+                    // Start log
+                    Console.WriteLine("------------------------------------------------------------------------------------------");
+                    Console.WriteLine("Processing: " + path);
+                    Console.WriteLine("------------------------------------------------------------------------------------------");
+
+
+                    // Process the folder
+                    ProcessFolder(path);
+
+                    String destination = "";
+                    String directoryName = new DirectoryInfo(path).Name;
+                    Console.WriteLine("Directory Name: " + directoryName);
+
+                    destination = Path.Combine(destinationRoot, directoryName);
+
+                    Console.WriteLine("Moving from: " + path);
+                    Console.WriteLine("Moving to: " + destination);
+
+                    Directory.Move(path, destination);
+
+                    Console.WriteLine("Finished processing");
+                    Console.WriteLine("");
                 }
-                // Movie
-                else
+                catch (Exception ex)
                 {
-                    destRoot = "E:\\Movies\\";
+                    Console.WriteLine(ex.Message);
+                    Console.WriteLine(ex.StackTrace);
                 }
-
-                String destination = Path.Combine(destRoot, new DirectoryInfo(path).Name);
-                Console.WriteLine("Source: " + path);
-                Console.WriteLine("Destination: " + destination);
-
-                // Do the move
-                Directory.Move(path, destination);
             }
         }
 
