@@ -77,7 +77,8 @@ namespace Rampant_Stripper
                     Path.GetExtension(fileName).Equals(".png") ||
                     Path.GetExtension(fileName).Equals(".jpg") ||
                     Path.GetExtension(fileName).Equals(".jpeg") ||
-                    Path.GetExtension(fileName).Equals(".nfo"))
+                    Path.GetExtension(fileName).Equals(".nfo") ||
+                    Path.GetExtension(fileName).Equals(".exe"))
                 {
                     File.Delete(fileName);
                     Console.WriteLine("Removed" + fileName);
